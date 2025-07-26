@@ -1,8 +1,10 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react";
+import Card from "./Card";
 
 const PoliticiansList = () => {
     const [politicians, setPoliticians] = useState(null);
     const [search, setSearch] = useState(``);
+    const [selectPosition, setSelectPosition] = useState('')
     const [loading, setLoading] = useState(true);
 
     async function getPoliticians() {
@@ -26,45 +28,65 @@ const PoliticiansList = () => {
     }, [])
 
     const filteredPoliticians = useMemo(() => {
-        if (!search.trim()) return politicians;
-        return politicians.filter(p =>
-            p.name.toLowerCase().includes(search.trim().toLowerCase()) ||
-            p.biography.toLowerCase().includes(search.trim().toLowerCase())
-        );
-    }, [search, politicians]);
+        if (!politicians) return [];
+        return politicians.filter(p => {
+            const searched = !search.trim() ||
+                p.name.toLowerCase().includes(search.trim().toLowerCase()) ||
+                p.biography.toLowerCase().includes(search.trim().toLowerCase());
+            const selected = !selectPosition || p.position === selectPosition;
+            return searched && selected
+        });
+    }, [search, politicians, selectPosition]);
+
+    const positionsArray = useMemo(() => {
+        if (!politicians || !Array.isArray(politicians)) return [];
+        return politicians.reduce((arr, p) => {
+            if (arr.includes(p.position)) return arr;
+            return [...arr, p.position];
+        }, [])
+        //return [...new Set(filteredPoliticians.map(p => p.position))];
+    }, [filteredPoliticians]);
 
     if (loading)
         return <>Caricamento...</>;
 
     return (
         <div className="container">
-            <input
-                type="text"
-                className="form-control"
-                placeholder="Inserisci testo"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-            />
+            <div className="d-flex">
+                <div className="w-75 position-relative">
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Inserisci testo"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                    <button onClick={() => setSearch('')} className="position-absolute del-search btn bg-transparent border-0 text-danger">
+                        <i className="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div className="w-25">
+                    <select
+                        className="form-select"
+                        aria-label="Seleziona un'opzione"
+                        value={selectPosition}
+                        onChange={e => setSelectPosition(e.target.value)}
+                    >
+                        <option value=''>Posizioni</option>
+                        {positionsArray.map(position => (
+                            <option key={position} value={position}>{position}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
             <ul className="list-group py-5">
                 {filteredPoliticians.length === 0 ? (
                     <li className="list-group-item">Nessun politico trovato.</li>
                 ) : (
                     filteredPoliticians.map((p, i) => (
-                        <li key={i} className="list-group-item card">
-                            <div className="card-body">
-                                <h4 className="card-title text-uppercase fw-bold">{p.name}</h4>
-                                <p className="card-text mt-3">
-                                    <strong className="d-block">Biography:</strong>
-                                    <span>{p.biography}</span>
-                                </p>
-                                <p className="card-text mt-3">
-                                    <strong className="d-block">Position:</strong>
-                                    <span>{p.position}</span>
-                                </p>
-                            </div>
-                        </li>
-                    ))
-                )}
+                        <Card key={i} politicians={p} />
+                    )
+                    ))}
             </ul>
         </div>
     )

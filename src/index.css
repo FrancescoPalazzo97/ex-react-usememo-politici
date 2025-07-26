@@ -17,3 +17,9 @@ li.card:hover {
     position: relative;
     left: 1rem;
 }
+
+.del-search {
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+}
