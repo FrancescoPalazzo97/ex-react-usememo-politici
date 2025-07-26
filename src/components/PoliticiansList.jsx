@@ -45,7 +45,7 @@ const PoliticiansList = () => {
             return [...arr, p.position];
         }, [])
         //return [...new Set(filteredPoliticians.map(p => p.position))];
-    }, [filteredPoliticians]);
+    }, [politicians]);
 
     if (loading)
         return <>Caricamento...</>;
