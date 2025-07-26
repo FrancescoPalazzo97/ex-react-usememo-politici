@@ -1,41 +1,46 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 
 const PoliticiansList = () => {
 
     const [politicians, setPoliticians] = useState(null);
+    const [filteredPoliticians, setFilteredPoliticians] = useState([]);
+    const [search, setSearch] = useState(``);
 
-    async function getPoliticians() {
-        const res = await fetch(`http://localhost:3333/politicians`);
-        const data = await res.json();
-        setPoliticians(data);
-    }
-
-    useEffect(() => {
-        console.log(`Recupero politici.....`)
-        getPoliticians();
-    }, []);
+    fetch(`http://localhost:3333/politicians`)
+        .then(res => res.json())
+        .then(data => setPoliticians(data))
+        .catch(e => console.error(`Errore durante il recupero dei dati dal server:\n`, e))
 
     if (!politicians)
-        <>Caricamento...</>
+        return <>Caricamento...</>
 
     return (
-        <ul className="list-group py-5 px-2">
-            {politicians.map((p, i) => (
-                <li key={i} className="list-group-item card">
-                    <div className="card-body">
-                        <h4 className="card-title text-uppercase fw-bold">{p.name}</h4>
-                        <p className="card-text mt-3">
-                            <h6 className="fw-bold">Biography:</h6>
-                            <span>{p.biography}</span>
-                        </p>
-                        <p className="card-text mt-3">
-                            <h6 className="fw-bold">Position:</h6>
-                            <span>{p.position}</span>
-                        </p>
-                    </div>
-                </li>
-            ))}
-        </ul>
+        <div className="container">
+            <input
+                type="text"
+                className="form-control"
+                placeholder="Inserisci testo"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+            />
+            <ul className="list-group py-5">
+                {politicians.map((p, i) => (
+                    <li key={i} className="list-group-item card">
+                        <div className="card-body">
+                            <h4 className="card-title text-uppercase fw-bold">{p.name}</h4>
+                            <p className="card-text mt-3">
+                                <strong className="d-block">Biography:</strong>
+                                <span>{p.biography}</span>
+                            </p>
+                            <p className="card-text mt-3">
+                                <strong className="d-block">Position:</strong>
+                                <span>{p.position}</span>
+                            </p>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </div>
     )
 }
 
